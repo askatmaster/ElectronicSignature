@@ -1,0 +1,22 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ElectronicSignature", "ElectronicSignature\ElectronicSignature.csproj", "{B161D548-1349-4EE6-AA01-660EAA57E373}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ESignatureTestConsole", "ESignatureTestConsole\ESignatureTestConsole.csproj", "{F229DF80-9BEA-4892-A24F-99BB61EF7542}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{B161D548-1349-4EE6-AA01-660EAA57E373}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B161D548-1349-4EE6-AA01-660EAA57E373}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B161D548-1349-4EE6-AA01-660EAA57E373}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B161D548-1349-4EE6-AA01-660EAA57E373}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F229DF80-9BEA-4892-A24F-99BB61EF7542}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F229DF80-9BEA-4892-A24F-99BB61EF7542}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F229DF80-9BEA-4892-A24F-99BB61EF7542}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F229DF80-9BEA-4892-A24F-99BB61EF7542}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
