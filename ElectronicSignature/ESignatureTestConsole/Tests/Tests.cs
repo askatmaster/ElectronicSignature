@@ -57,23 +57,23 @@ public static class Tests
         signedCert.ToPemFile(signedCertPath);
     }
 
-    public static void TestVerifySignedByPrivateKeyData()
+    public static void TestVerifySignedByPrivateKey()
     {
         var message = "Hello world";
-        var signature = Cryptography.SignDataWithPrivateKey(message, privateKeyPath.GetPrivateKeyFromPem());
+        var signature = Cryptography.SignDataByPrivateKey(message, privateKeyPath.GetPrivateKeyFromPem());
 
-        if(Cryptography.VerifySignedData(message, signature, publicKeyPath.GetPublickKeyFromPem()))
+        if(Cryptography.VerifySignedByPublicKey(message, signature, publicKeyPath.GetPublickKeyFromPem()))
             Console.WriteLine("True");
         else
             Console.WriteLine("False");
     }
 
-    public static void TestVerifySignedByPrivateCertData()
+    public static void TestVerifySignedByPrivateCert()
     {
         var message = "Hello world";
-        var signature = Cryptography.SignDataWithPrivateCert(message, privateCertPath.GetPrivateCert(privateCertPass));
+        var signature = Cryptography.SignDataByPrivateCert(message, privateCertPath.GetPrivateCert(privateCertPass));
 
-        if(Cryptography.VerifySignedDataByIssuer(signature, signedCertPath.GetPublicCert(), out var data))
+        if(Cryptography.VerifySignedDataByCertIssuer(signature, signedCertPath.GetPublicCert(), out var data))
         {
             if (data != null)
                 Console.WriteLine(Encoding.UTF8.GetString(data));
@@ -84,25 +84,25 @@ public static class Tests
         }
     }
 
-    public static void TestExtractSignedByPrivateCertData()
+    public static void TestExtractSignedByPrivateCert()
     {
         var message = "Hello world";
-        var signature = Cryptography.SignDataWithPrivateCert(message, privateCertPath.GetPrivateCert(privateCertPass));
+        var signature = Cryptography.SignDataByPrivateCert(message, privateCertPath.GetPrivateCert(privateCertPass));
 
         var data = Cryptography.ExtractSignedData(signature);
         Console.WriteLine(Encoding.UTF8.GetString(data));
     }
 
-    public static void TestDecryptWithCertData()
+    public static void TestDecryptWithCert()
     {
         var message = "Hello world";
-        var encoded = Cryptography.EncryptDataWithPublicCert(message, signedCertPath.GetPublicCert());
+        var encoded = Cryptography.EncryptDataByPublicCert(message, signedCertPath.GetPublicCert());
         var data = Cryptography.DecryptDataWithPrivateCert(encoded, privateCertPath.GetPrivateCert(privateCertPass), privateCertPass);
 
         Console.WriteLine(Encoding.UTF8.GetString(data));
     }
 
-    public static void TestDecryptWithKeyData()
+    public static void TestDecryptWithKey()
     {
         var message = "Hello world";
         var keyPair = keyPairPath.GetKeyPairFromPem();
@@ -132,5 +132,44 @@ public static class Tests
 
         // Export certificate to a file.
         File.WriteAllBytes(privateCertPath, exportableCertificate.Export(X509ContentType.Pfx, passwordForCertificateProtection));
+    }
+
+    public static void TestVerifySignedDataBySameCert()
+    {
+        var message = "Hello world";
+        var signature = Cryptography.SignDataByPrivateCert(message, privateCertPath.GetPrivateCert(privateCertPass));
+
+        if(Cryptography.VerifySignedDataBySameCert(signature, privateCertPath.GetPrivateCert(privateCertPass), out var data))
+        {
+            if (data != null)
+                Console.WriteLine(Encoding.UTF8.GetString(data));
+        }
+        else
+        {
+            Console.WriteLine("False");
+        }
+    }
+
+    public static void TestVerifySignedDataRootCertAndTrustCommunication()
+    {
+        var message = "Hello world";
+        var signature = Cryptography.SignDataByPrivateCert(message, privateCertPath.GetPrivateCert(privateCertPass));
+
+        if(Cryptography.VerifySignedDataRootCertAndTrustCommunication(signature, privateCertPath.GetPrivateCert(privateCertPass), out var data))
+        {
+            if (data != null)
+                Console.WriteLine(Encoding.UTF8.GetString(data));
+        }
+        else
+        {
+            Console.WriteLine("False");
+        }
+    }
+
+    public static void TestVerifyMatchBetweenPublicAndPrivateKeys()
+    {
+        var dasd = Cryptography.VerifyMatchBetweenPublicAndPrivateKeys(signedCertPath.GetPublicCert(), privateCertPath.GetPrivateCert(privateCertPass));
+
+        Console.WriteLine(dasd);
     }
 }

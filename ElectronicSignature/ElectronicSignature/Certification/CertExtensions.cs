@@ -33,4 +33,28 @@ public static class CertExtensions
     {
         return new X509Certificate2(Convert.FromBase64String(base64PrivateKey), password, X509KeyStorageFlags.MachineKeySet | X509KeyStorageFlags.Exportable);
     }
+
+    public static bool IsRsaAlgorithm(this CryptographyAlgorithm algorithm)
+    {
+        var algorithmName = algorithm.ToString();
+
+        return  algorithmName[^3..].ToLower() == "rsa";
+    }
+
+    public static bool IsRsaAlgorithm(this string algorithmName)
+    {
+        return  algorithmName[^3..].ToLower() == "rsa";
+    }
+
+    public static bool IsECDSAAlgorithm(this CryptographyAlgorithm algorithm)
+    {
+        var algoritmName = algorithm.ToString();
+
+        return  algoritmName[^5..].ToLower() == "ecdsa";
+    }
+
+    public static bool IsECDSAAlgorithm(this string algoritmName)
+    {
+        return  algoritmName[^5..].ToLower() == "ecdsa";
+    }
 }

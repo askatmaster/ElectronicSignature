@@ -94,14 +94,14 @@ public static class Cryptography
     {
         var subject = new X509Name($"C={country}, ST={state}, L={locality}, O={organization}, OU={organizationalUnit}, CN={commonName}");
 
-        var algoritmName = algorithm.ToString();
+        var algorithmName = algorithm.ToString();
 
-        var isRSA = algoritmName[^3..].ToLower() == "rsa";
+        var isRSA = algorithmName.IsRsaAlgorithm();
 
         var csr = keyPair.Private switch
         {
-            ECPrivateKeyParameters when !isRSA => new Pkcs10CertificationRequest(algoritmName, subject, keyPair.Public, null, keyPair.Private),
-            RsaPrivateCrtKeyParameters when isRSA => new Pkcs10CertificationRequest(algoritmName, subject, keyPair.Public, null, keyPair.Private),
+            ECPrivateKeyParameters when !isRSA => new Pkcs10CertificationRequest(algorithmName, subject, keyPair.Public, null, keyPair.Private),
+            RsaPrivateCrtKeyParameters when isRSA => new Pkcs10CertificationRequest(algorithmName, subject, keyPair.Public, null, keyPair.Private),
             _ => throw new Exception("Unknown key pair type")
         };
 
@@ -225,17 +225,10 @@ public static class Cryptography
 
         var x509Certificate = DotNetUtilities.FromX509Certificate(privateCert);
 
-        var a = new CmsEnvelopedData(encryptedData).GetRecipientInfos();
-        // var b = a.GetFirstRecipient(new RecipientID
-        // {
-        //     SerialNumber = x509Certificate.SerialNumber,
-        //     Issuer = x509Certificate.IssuerDN
-        // });
-        // var c = b.GetContent(key);
-        // return c;
+        var recipientInfos = new CmsEnvelopedData(encryptedData).GetRecipientInfos();
 
         RecipientInformation? firstRecipient = null;
-        foreach (var recipientInfo in a.GetRecipients())
+        foreach (var recipientInfo in recipientInfos.GetRecipients())
         {
             if(recipientInfo.RecipientID.Issuer.Equivalent(x509Certificate.IssuerDN) || recipientInfo.RecipientID.SerialNumber.Equals(x509Certificate.SerialNumber))
                 firstRecipient = recipientInfo;
@@ -244,22 +237,22 @@ public static class Cryptography
         return firstRecipient!.GetContent(key);
     }
 
-    public static byte[] EncryptDataWithPublicCert(byte[] data, byte[] publicCert)
+    public static byte[] EncryptDataByPublicCert(byte[] data, byte[] publicCert)
     {
-        return EncryptDataWithPublicCert(data, publicCert.GetPublicCert());
+        return EncryptDataByPublicCert(data, publicCert.GetPublicCert());
     }
 
-    public static byte[] EncryptDataWithPublicCert(byte[] data, string publicCertPath)
+    public static byte[] EncryptDataByPublicCert(byte[] data, string publicCertPath)
     {
-        return EncryptDataWithPublicCert(data, publicCertPath.GetPublicCert());
+        return EncryptDataByPublicCert(data, publicCertPath.GetPublicCert());
     }
 
-    public static byte[] EncryptDataWithPublicCert(string data, X509Certificate2 publicCert)
+    public static byte[] EncryptDataByPublicCert(string data, X509Certificate2 publicCert)
     {
-        return EncryptDataWithPublicCert(Encoding.UTF8.GetBytes(data), publicCert);
+        return EncryptDataByPublicCert(Encoding.UTF8.GetBytes(data), publicCert);
     }
 
-    public static byte[] EncryptDataWithPublicCert(byte[] data, X509Certificate2 publicCert)
+    public static byte[] EncryptDataByPublicCert(byte[] data, X509Certificate2 publicCert)
     {
         var envelopGenerator = new CmsEnvelopedDataGenerator();
         var cert = new X509CertificateParser().ReadCertificate(publicCert.RawData);
@@ -289,32 +282,32 @@ public static class Cryptography
         return signedCm.ContentInfo.Content;
     }
 
-    public static byte[] SignDataWithPrivateCert(byte[] data, byte[] privateCert, string? password)
+    public static byte[] SignDataByPrivateCert(byte[] data, byte[] privateCert, string? password)
     {
-        return SignDataWithPrivateCert(data, privateCert.GetPrivateCert( password));
+        return SignDataByPrivateCert(data, privateCert.GetPrivateCert( password));
     }
 
-    public static byte[] SignDataWithPrivateCert(byte[] data, string privateCertPath, string? password)
+    public static byte[] SignDataByPrivateCert(byte[] data, string privateCertPath, string? password)
     {
-        return SignDataWithPrivateCert(data, privateCertPath.GetPrivateCert(password));
+        return SignDataByPrivateCert(data, privateCertPath.GetPrivateCert(password));
     }
 
-    public static byte[] SignDataWithPrivateCert(string base64Data, byte[] privateCert, string? password)
+    public static byte[] SignDataByPrivateCert(string base64Data, byte[] privateCert, string? password)
     {
-        return SignDataWithPrivateCert(Encoding.UTF8.GetBytes(base64Data), privateCert.GetPrivateCert(password));
+        return SignDataByPrivateCert(Encoding.UTF8.GetBytes(base64Data), privateCert.GetPrivateCert(password));
     }
 
-    public static byte[] SignDataWithPrivateCert(string base64Data, string privateCertPath, string? password)
+    public static byte[] SignDataByPrivateCert(string base64Data, string privateCertPath, string? password)
     {
-        return SignDataWithPrivateCert(Encoding.UTF8.GetBytes(base64Data), privateCertPath.GetPrivateCert(password));
+        return SignDataByPrivateCert(Encoding.UTF8.GetBytes(base64Data), privateCertPath.GetPrivateCert(password));
     }
 
-    public static byte[] SignDataWithPrivateCert(string base64Data, X509Certificate2 privateKeyCert)
+    public static byte[] SignDataByPrivateCert(string base64Data, X509Certificate2 privateKeyCert)
     {
-        return SignDataWithPrivateCert(Encoding.UTF8.GetBytes(base64Data), privateKeyCert);
+        return SignDataByPrivateCert(Encoding.UTF8.GetBytes(base64Data), privateKeyCert);
     }
 
-    public static byte[] SignDataWithPrivateCert(byte[] data, X509Certificate2 privateKeyCert)
+    public static byte[] SignDataByPrivateCert(byte[] data, X509Certificate2 privateKeyCert)
     {
         if (data == null)
             throw new ArgumentNullException(nameof(data));
@@ -328,42 +321,42 @@ public static class Cryptography
         return signedCms.Encode();
     }
 
-    public static byte[] SignDataWithPrivateKey(byte[] data, byte[] privateCert, string? password)
+    public static byte[] SignDataByPrivateKey(byte[] data, byte[] privateCert, string? password)
     {
-        return SignDataWithPrivateKey(data, privateCert.LoadPrivateKeyFromCert(password));
+        return SignDataByPrivateKey(data, privateCert.LoadPrivateKeyFromCert(password));
     }
 
-    public static byte[] SignDataWithPrivateKey(byte[] data, string privateCertPath, string? password)
+    public static byte[] SignDataByPrivateKey(byte[] data, string privateCertPath, string? password)
     {
-        return SignDataWithPrivateKey(data, privateCertPath.LoadPrivateKeyFromCert(password));
+        return SignDataByPrivateKey(data, privateCertPath.LoadPrivateKeyFromCert(password));
     }
 
-    public static byte[] SignDataWithPrivateKey(string data, byte[] privateCert, string? password)
+    public static byte[] SignDataByPrivateKey(string data, byte[] privateCert, string? password)
     {
-        return SignDataWithPrivateKey(Encoding.UTF8.GetBytes(data), privateCert.LoadPrivateKeyFromCert(password));
+        return SignDataByPrivateKey(Encoding.UTF8.GetBytes(data), privateCert.LoadPrivateKeyFromCert(password));
     }
 
-    public static byte[] SignDataWithPrivateKey(string data, string privateCertPath, string? password)
+    public static byte[] SignDataByPrivateKey(string data, string privateCertPath, string? password)
     {
-        return SignDataWithPrivateKey(Encoding.UTF8.GetBytes(data), privateCertPath.LoadPrivateKeyFromCert(password));
+        return SignDataByPrivateKey(Encoding.UTF8.GetBytes(data), privateCertPath.LoadPrivateKeyFromCert(password));
     }
 
-    public static byte[] SignDataWithPrivateKey(string data, string privateKeyPath)
+    public static byte[] SignDataByPrivateKey(string data, string privateKeyPath)
     {
-        return SignDataWithPrivateKey(Encoding.UTF8.GetBytes(data), privateKeyPath.GetKeyPairFromPem().Private);
+        return SignDataByPrivateKey(Encoding.UTF8.GetBytes(data), privateKeyPath.GetKeyPairFromPem().Private);
     }
 
-    public static byte[] SignDataWithPrivateKey(byte[] data, string privateKeyPath)
+    public static byte[] SignDataByPrivateKey(byte[] data, string privateKeyPath)
     {
-        return SignDataWithPrivateKey(data, privateKeyPath.GetKeyPairFromPem().Private);
+        return SignDataByPrivateKey(data, privateKeyPath.GetKeyPairFromPem().Private);
     }
 
-    public static byte[] SignDataWithPrivateKey(string data, AsymmetricKeyParameter privateKey)
+    public static byte[] SignDataByPrivateKey(string data, AsymmetricKeyParameter privateKey)
     {
-        return SignDataWithPrivateKey(Encoding.UTF8.GetBytes(data), privateKey);
+        return SignDataByPrivateKey(Encoding.UTF8.GetBytes(data), privateKey);
     }
 
-    public static byte[] SignDataWithPrivateKey(byte[] data, AsymmetricKeyParameter privateKey)
+    public static byte[] SignDataByPrivateKey(byte[] data, AsymmetricKeyParameter privateKey)
     {
         var signer = SignerUtilities.GetSigner("SHA256withRSA");
         signer.Init(true, privateKey);
@@ -386,32 +379,25 @@ public static class Cryptography
 
         var signedCms = new SignedCms();
 
-        try
+        signedCms.Decode(sigendData);
+        signedCms.CheckSignature(new X509Certificate2Collection(publicCert), false);
+        decodedMessage = signedCms.ContentInfo.Content;
+
+        // Проверяем, что подпись сделана сертификатом, которым мы ожидали
+        var signer = signedCms.SignerInfos[0];
+        var signingCert = signer.Certificate;
+
+        if(signingCert is null)
+            throw new Exception("Not found certificate from sigendData");
+
+        if (signingCert.Thumbprint == publicCert.Thumbprint)
         {
-            signedCms.Decode(sigendData);
-            signedCms.CheckSignature(new X509Certificate2Collection(publicCert), false);
-            decodedMessage = signedCms.ContentInfo.Content;
-
-            // Проверяем, что подпись сделана сертификатом, которым мы ожидали
-            var signer = signedCms.SignerInfos[0];
-            var signingCert = signer.Certificate;
-
-            if(signingCert is null)
-                throw new Exception("Not found certificate from sigendData");
-
-            if (signingCert.Thumbprint == publicCert.Thumbprint)
-            {
-                isValid = true;
-            }
-            else
-            {
-                isValid = false;
-                Console.WriteLine("The message was signed by a different certificate.");
-            }
+            isValid = true;
         }
-        catch (CryptographicException)
+        else
         {
             isValid = false;
+            Console.WriteLine("The message was signed by a different certificate.");
         }
 
         return isValid;
@@ -445,7 +431,7 @@ public static class Cryptography
         return flag;
     }
 
-    public static bool VerifySignedDataByIssuer(byte[] signature, X509Certificate2 publicCert, out byte[]? decodedMessage)
+    public static bool VerifySignedDataByCertIssuer(byte[] signature, X509Certificate2 publicCert, out byte[]? decodedMessage)
     {
         bool isValid;
         decodedMessage = null;
@@ -489,7 +475,7 @@ public static class Cryptography
         return isValid;
     }
 
-    public static bool VerifySignedData(string message,
+    public static bool VerifySignedByPublicKey(string message,
                                         byte[] sigendData,
                                         AsymmetricKeyParameter publicKey,
                                         CryptographyAlgorithm algorithm = CryptographyAlgorithm.SHA256withRSA)
