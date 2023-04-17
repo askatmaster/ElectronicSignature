@@ -70,17 +70,18 @@ public static class Cryptography
 
     public static bool IsECDSAKey(this X509Certificate2 cert)
     {
-        //TODO
-        var key = cert.LoadPublicKeyFromCert(null);
+        // Получение публичного ключа из сертификата
+        var publicKey = cert.PublicKey;
 
-        switch(key)
-        {
-            case ECPrivateKeyParameters:
-            case ECPublicKeyParameters:
-                return true;
-            default:
-                return false;
-        }
+        // Определение типа публичного ключа
+        var keyAlgorithm = publicKey.Oid.FriendlyName;
+
+        if (keyAlgorithm != null && keyAlgorithm.Contains("RSA"))
+            return false;
+        if (keyAlgorithm != null && (keyAlgorithm.Contains("ECDSA") || keyAlgorithm.Contains("ECDsa")))
+            return true;
+
+        throw new Exception("Unknown public key type");
     }
 
     public static Pkcs10CertificationRequest GenerateCSR(string country,
