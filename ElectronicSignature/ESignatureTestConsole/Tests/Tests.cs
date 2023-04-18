@@ -9,28 +9,53 @@ namespace ESignatureTestConsole.Tests;
 
 public static class Tests
 {
-    private static readonly string keyPairPath = @"tests/rsaKeyPair.pem";
-    private static readonly string privateKeyPath = @"tests/rsaPrivateKey.pem";
-    private static readonly string publicKeyPath = @"tests/rsaPublicKey.pem";
-    private static readonly string csrPath = @"tests/rsaCSR.pem";
-    private static readonly string signedCertPath = @"tests/rsaSignedCert.pem";
-    private static readonly string selfSignedCertPath = @"tests/selfSignedCert.pem";
-    private static readonly string privateCertPath = @"tests/privateCert.pfx";
+    private static readonly string keyPairPath = @"rsaKeyPair.pem";
+    private static readonly string privateKeyPath = @"rsaPrivateKey.pem";
+    private static readonly string publicKeyPath = @"rsaPublicKey.pem";
+    private static readonly string csrPath = @"rsaCSR.pem";
+    private static readonly string signedCertPath = @"rsaSignedCert.pem";
+    private static readonly string selfSignedCertPath = @"selfSignedCert.pem";
+    private static readonly string privateCertPath = @"privateCert.pfx";
     private static readonly string privateCertPass = "1234";
 
+    /// <summary>
+    /// This test function could be generating a public-private key pair using the RSA encryption algorithm.
+    /// This is a commonly used algorithm for generating secure keys and is often used for secure communication.
+    /// </summary>
     public static void TestGenerateRSAKeyPair()
     {
         var keyPair = Cryptography.GenerateRSAKeyPair();
         keyPair.ToPemFile(keyPairPath);
+
+        Console.WriteLine(keyPair.Public.IsRSAKey());
     }
 
-    public static void TestWriteCreatePrivateKey()
+    /// <summary>
+    /// This test function could be generating a public-private key pair using the ECDSA encryption algorithm.
+    /// This is a commonly used algorithm for generating secure keys and is often used for secure communication.
+    /// </summary>
+    public static void TestGenerateECDSAKeyPair()
+    {
+        var keyPair = Cryptography.GenerateECDSAKeyPair();
+        keyPair.ToPemFile(keyPairPath);
+
+        Console.WriteLine(keyPair.Public.IsECDSAKey());
+    }
+
+    /// <summary>
+    /// This test function may be writing a key-pair to a file or creating a private and public keys.
+    /// Private keys are used in asymmetric encryption, where one key is used for encryption and another key is used for decryption.
+    /// </summary>
+    public static void TestWriteKeyPairInPemFile()
     {
         var keyPair = keyPairPath.GetKeyPairFromPem();
         keyPair.Private.ToPemFile(privateKeyPath);
         keyPair.Public.ToPemFile(publicKeyPath);
     }
 
+    /// <summary>
+    /// This test function may be generating a Certificate Signing Request (CSR), which is a message sent to a certificate authority to request a digital certificate.
+    /// </summary>
     public static void TestGenerateCSR()
     {
         var keyPair = keyPairPath.GetKeyPairFromPem();
@@ -38,6 +63,10 @@ public static class Tests
         csr.ToPemFile(csrPath);
     }
 
+    /// <summary>
+    /// This test function may be generating a self-signed certificate.
+    /// Self-signed certificates are digital certificates that are signed by the same entity that issues the certificate.
+    /// </summary>
     public static void TestGenerateSelfSignedCert()
     {
         var selfSignedCert = Cryptography.GenerateSelfSignedCert(csrPath.GetCSRPemFile(),
@@ -47,6 +76,10 @@ public static class Tests
         selfSignedCert.ToPemFile(selfSignedCertPath);
     }
 
+    /// <summary>
+    /// This test function may be generating a signed certificate.
+    /// A signed certificate is a digital certificate that has been signed by a trusted third-party, known as a certificate authority.
+    /// </summary>
     public static void TestGenerateSignedCert()
     {
         var signedCert = Cryptography.GenerateSignedCertificate(csrPath.GetCSRPemFile(),
@@ -57,6 +90,9 @@ public static class Tests
         signedCert.ToPemFile(signedCertPath);
     }
 
+    /// <summary>
+    /// This test function may be verifying that a certificate has been signed by a private key.
+    /// </summary>
     public static void TestVerifySignedByPrivateKey()
     {
         var message = "Hello world";
@@ -68,6 +104,9 @@ public static class Tests
             Console.WriteLine("False");
     }
 
+    /// <summary>
+    /// This test function may be verifying that a certificate has been signed by a private certificate.
+    /// </summary>
     public static void TestVerifySignedByPrivateCert()
     {
         var message = "Hello world";
@@ -84,6 +123,9 @@ public static class Tests
         }
     }
 
+    /// <summary>
+    /// This test function may be extracting a signed certificate from a private certificate.
+    /// </summary>
     public static void TestExtractSignedByPrivateCert()
     {
         var message = "Hello world";
@@ -93,6 +135,10 @@ public static class Tests
         Console.WriteLine(Encoding.UTF8.GetString(data));
     }
 
+    /// <summary>
+    /// This test function may be decrypting data using a certificate.
+    /// In asymmetric encryption, the public key is used for encryption and the private key is used for decryption.
+    /// </summary>
     public static void TestDecryptWithCert()
     {
         var message = "Hello world";
@@ -102,6 +148,7 @@ public static class Tests
         Console.WriteLine(Encoding.UTF8.GetString(data));
     }
 
+    //This test function may be decrypting data using a private key.
     public static void TestDecryptWithKey()
     {
         var message = "Hello world";
@@ -112,6 +159,9 @@ public static class Tests
         Console.WriteLine(data);
     }
 
+    /// <summary>
+    /// This test function could be creating a PFX file, which is a file format used to store private keys and certificates in a secure manner.
+    /// </summary>
     public static void CreatePfx()
     {
         var certificate = new X509Certificate2(selfSignedCertPath);
@@ -134,6 +184,9 @@ public static class Tests
         File.WriteAllBytes(privateCertPath, exportableCertificate.Export(X509ContentType.Pfx, passwordForCertificateProtection));
     }
 
+    /// <summary>
+    /// This test function may be verifying that signed data can be trusted using the same certificate.
+    /// </summary>
     public static void TestVerifySignedDataBySameCert()
     {
         var message = "Hello world";
@@ -150,6 +203,9 @@ public static class Tests
         }
     }
 
+    /// <summary>
+    /// This test function may be verifying that signed data can be trusted using a root certificate.
+    /// </summary>
     public static void TestVerifySignedDataRootCertAndTrustCommunication()
     {
         var message = "Hello world";
@@ -166,6 +222,9 @@ public static class Tests
         }
     }
 
+    /// <summary>
+    /// This test function may be verifying that the public key and the private key are a match.
+    /// </summary>
     public static void TestVerifyMatchBetweenPublicAndPrivateKeys()
     {
         var dasd = Cryptography.VerifyMatchBetweenPublicAndPrivateKeys(signedCertPath.GetPublicCert(), privateCertPath.GetPrivateCert(privateCertPass));

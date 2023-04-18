@@ -245,7 +245,6 @@ public static class Cryptography
                                                             DateTime endDate,
                                                             CryptographyAlgorithm algorithm = CryptographyAlgorithm.SHA256withRSA)
     {
-        // Загрузка PFX-файла
         AsymmetricKeyParameter pfxPrivateKey;
 
         try
@@ -254,7 +253,7 @@ public static class Cryptography
         }
         catch (Exception)
         {
-            pfxPrivateKey = pfx.LoadPrivateKeyFromCert(pfxPassword);
+            pfxPrivateKey = pfx.GetPrivateKeyFromCert(pfxPassword);
         }
 
         var pfxBouncyCastleCertificate = DotNetUtilities.FromX509Certificate(pfx);
@@ -274,11 +273,11 @@ public static class Cryptography
         certGenerator.SetSubjectDN(csrInfo.Subject);
         certGenerator.SetPublicKey(csr.GetPublicKey());
 
-        // Добавление расширений
+        // Adding extensions
         certGenerator.AddExtension(X509Extensions.BasicConstraints.Id, false, new BasicConstraints(false));
         certGenerator.AddExtension(X509Extensions.SubjectKeyIdentifier.Id, false, new SubjectKeyIdentifierStructure(csr.GetPublicKey()));
 
-        // Создание подписи и генерация сертификата
+        // Creating a Signature and Generating a Certificate
         ISignatureFactory signatureFactory = new Asn1SignatureFactory(algorithm.ToString(), pfxPrivateKey);
 
         return certGenerator.Generate(signatureFactory);
@@ -361,7 +360,7 @@ public static class Cryptography
         }
         catch (Exception)
         {
-            key = privateCert.LoadPrivateKeyFromCert(password);
+            key = privateCert.GetPrivateKeyFromCert(password);
         }
 
         var x509Certificate = DotNetUtilities.FromX509Certificate(privateCert);
@@ -369,6 +368,7 @@ public static class Cryptography
         var recipientInfos = new CmsEnvelopedData(encryptedData).GetRecipientInfos();
 
         RecipientInformation? firstRecipient = null;
+
         foreach (var recipientInfo in recipientInfos.GetRecipients())
         {
             if(recipientInfo.RecipientID.Issuer.Equivalent(x509Certificate.IssuerDN) || recipientInfo.RecipientID.SerialNumber.Equals(x509Certificate.SerialNumber))
@@ -547,7 +547,7 @@ public static class Cryptography
     /// <returns>The signed data as a byte array.</returns>
     public static byte[] SignDataByPrivateKey(byte[] data, byte[] privateCert, string? password)
     {
-        return SignDataByPrivateKey(data, privateCert.LoadPrivateKeyFromCert(password));
+        return SignDataByPrivateKey(data, privateCert.GetPrivateKeyFromCert(password));
     }
 
     /// <summary>
@@ -559,7 +559,7 @@ public static class Cryptography
     /// <returns>The signed data as a byte array.</returns>
     public static byte[] SignDataByPrivateKey(byte[] data, string privateCertPath, string? password)
     {
-        return SignDataByPrivateKey(data, privateCertPath.LoadPrivateKeyFromCert(password));
+        return SignDataByPrivateKey(data, privateCertPath.GetPrivateKeyFromCert(password));
     }
 
     /// <summary>
@@ -571,7 +571,7 @@ public static class Cryptography
     /// <returns>The signed data as a byte array.</returns>
     public static byte[] SignDataByPrivateKey(string data, byte[] privateCert, string? password)
     {
-        return SignDataByPrivateKey(Encoding.UTF8.GetBytes(data), privateCert.LoadPrivateKeyFromCert(password));
+        return SignDataByPrivateKey(Encoding.UTF8.GetBytes(data), privateCert.GetPrivateKeyFromCert(password));
     }
 
     /// <summary>
@@ -583,7 +583,7 @@ public static class Cryptography
     /// <returns>The signed data as a byte array.</returns>
     public static byte[] SignDataByPrivateKey(string data, string privateCertPath, string? password)
     {
-        return SignDataByPrivateKey(Encoding.UTF8.GetBytes(data), privateCertPath.LoadPrivateKeyFromCert(password));
+        return SignDataByPrivateKey(Encoding.UTF8.GetBytes(data), privateCertPath.GetPrivateKeyFromCert(password));
     }
 
     /// <summary>
@@ -638,6 +638,7 @@ public static class Cryptography
 
     /// <summary>
     /// Verifies signed data using the same certificate and extracts the decoded message.
+    /// ATTENTION!!! When this method is called, the result will be "flase" if any of the certificates under test are not in the trust store;
     /// </summary>
     /// <param name="sigendData">The signed data as a byte array.</param>
     /// <param name="publicCert">The public certificate as an X509Certificate2 object.</param>
@@ -656,25 +657,32 @@ public static class Cryptography
 
         var signedCms = new SignedCms();
 
-        signedCms.Decode(sigendData);
-        signedCms.CheckSignature(new X509Certificate2Collection(publicCert), false);
-        decodedMessage = signedCms.ContentInfo.Content;
-
-        // We check that the signature is made with the certificate that we expected
-        var signer = signedCms.SignerInfos[0];
-        var signingCert = signer.Certificate;
-
-        if(signingCert is null)
-            throw new Exception("Not found certificate from sigendData");
-
-        if (signingCert.Thumbprint == publicCert.Thumbprint)
+        try
         {
-            isValid = true;
+            signedCms.Decode(sigendData);
+            signedCms.CheckSignature(new X509Certificate2Collection(publicCert), false);
+            decodedMessage = signedCms.ContentInfo.Content;
+
+            // We check that the signature is made with the certificate that we expected
+            var signer = signedCms.SignerInfos[0];
+            var signingCert = signer.Certificate;
+
+            if(signingCert is null)
+                throw new Exception("Not found certificate from sigendData");
+
+            if (signingCert.Thumbprint == publicCert.Thumbprint)
+            {
+                isValid = true;
+            }
+            else
+            {
+                isValid = false;
+                Console.WriteLine("The message was signed by a different certificate.");
+            }
         }
-        else
+        catch (CryptographicException)
         {
             isValid = false;
-            Console.WriteLine("The message was signed by a different certificate.");
         }
 
         return isValid;
@@ -682,6 +690,7 @@ public static class Cryptography
 
     /// <summary>
     /// Verifies signed data using the root certificate, ensuring trust communication, and extracts the decoded message.
+    /// ATTENTION!!! When this method is called, the result will be "flase" if any of the certificates under test are not in the trust store;
     /// </summary>
     /// <param name="sigendData">The signed data as a byte array.</param>
     /// <param name="publicCert">The public certificate as an X509Certificate2 object.</param>
@@ -717,6 +726,7 @@ public static class Cryptography
 
     /// <summary>
     /// Verifies signed data using the certificate issuer and extracts the decoded message.
+    /// ATTENTION!!! When this method is called, the result will be "flase" if any of the certificates under test are not in the trust store;
     /// </summary>
     /// <param name="signature">The signed data as a byte array.</param>
     /// <param name="publicCert">The public certificate as an X509Certificate2 object.</param>
@@ -758,7 +768,7 @@ public static class Cryptography
                 Console.WriteLine("The message was signed by a different certificate.");
             }
         }
-        catch (CryptographicException)
+        catch (CryptographicException e)
         {
             isValid = false;
         }
@@ -775,9 +785,9 @@ public static class Cryptography
     /// <param name="algorithm">The cryptographic algorithm used for signing, default is SHA256withRSA.</param>
     /// <returns>True if the signed data is verified, otherwise false.</returns>
     public static bool VerifySignedByPublicKey(string message,
-                                        byte[] sigendData,
-                                        AsymmetricKeyParameter publicKey,
-                                        CryptographyAlgorithm algorithm = CryptographyAlgorithm.SHA256withRSA)
+                                               byte[] sigendData,
+                                               AsymmetricKeyParameter publicKey,
+                                               CryptographyAlgorithm algorithm = CryptographyAlgorithm.SHA256withRSA)
     {
         var verifier = SignerUtilities.GetSigner(algorithm.ToString());
         verifier.Init(false, publicKey);

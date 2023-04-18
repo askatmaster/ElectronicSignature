@@ -7,19 +7,39 @@ namespace ElectronicSignature.Certification;
 
 public static class PfxExtensions
 {
-    public static AsymmetricKeyParameter LoadPrivateKeyFromCert(this string pfxPath, string? password)
+    /// <summary>
+    /// Loads a private key from a certificate file in PFX format.
+    /// </summary>
+    /// <param name="pfxPath">The file path of the PFX certificate file.</param>
+    /// <param name="password">The optional password to access the certificate's private key. Can be null if the certificate is not password-protected.</param>
+    /// <returns>An AsymmetricKeyParameter object representing the private key extracted from the certificate.</returns>
+    public static AsymmetricKeyParameter GetPrivateKeyFromCert(this string pfxPath, string? password)
     {
         var pfxCertificate = new X509Certificate2(pfxPath, password, X509KeyStorageFlags.MachineKeySet | X509KeyStorageFlags.Exportable);
-        return pfxCertificate.LoadPrivateKeyFromCert(password);
+        return pfxCertificate.GetPrivateKeyFromCert(password);
     }
 
-    public static AsymmetricKeyParameter LoadPrivateKeyFromCert(this byte[] pfx, string? password)
+    /// <summary>
+    /// Loads a private key from a certificate provided as a byte array in PFX format.
+    /// </summary>
+    /// <param name="pfx">The byte array containing the PFX certificate data.</param>
+    /// <param name="password">The optional password to access the certificate's private key. Can be null if the certificate is not password-protected.</param>
+    /// <returns>An AsymmetricKeyParameter object representing the private key extracted from the certificate.</returns>
+    public static AsymmetricKeyParameter GetPrivateKeyFromCert(this byte[] pfx, string? password)
     {
         var pfxCertificate = new X509Certificate2(pfx, password, X509KeyStorageFlags.MachineKeySet | X509KeyStorageFlags.Exportable);
-        return pfxCertificate.LoadPrivateKeyFromCert(password);
+        return pfxCertificate.GetPrivateKeyFromCert(password);
     }
 
-    public static AsymmetricKeyParameter LoadPrivateKeyFromCert(this X509Certificate2 certificate, string? password)
+    /// <summary>
+    /// Retrieves the private key from an X509Certificate2 object.
+    /// </summary>
+    /// <param name="certificate">The X509Certificate2 object containing the private key to be extracted.</param>
+    /// <param name="password">The optional password to access the certificate's private key. Can be null if the certificate is not password-protected.</param>
+    /// <returns>An AsymmetricKeyParameter object representing the private key extracted from the certificate.</returns>
+    /// <exception cref="InvalidOperationException">Thrown when no private key is found in the certificate.</exception>
+    /// <exception cref="Exception">Thrown when there is a root certificate error.</exception>
+    public static AsymmetricKeyParameter GetPrivateKeyFromCert(this X509Certificate2 certificate, string? password)
     {
         AsymmetricKeyParameter? privateKey = null;
 
@@ -81,19 +101,37 @@ public static class PfxExtensions
         return privateKey;
     }
 
-    public static AsymmetricKeyParameter LoadPublicKeyFromCert(this string pfxPath, string? password)
+    /// <summary>
+    /// Retrieves the public key from a certificate file in PFX format.
+    /// </summary>
+    /// <param name="pfxPath">The file path of the PFX certificate file.</param>
+    /// <param name="password">The optional password to access the certificate's private key. Can be null if the certificate is not password-protected.</param>
+    /// <returns>An AsymmetricKeyParameter object representing the public key extracted from the certificate.</returns>
+    public static AsymmetricKeyParameter GetPublicKeyFromCert(this string pfxPath, string? password)
     {
         var pfxCertificate = new X509Certificate2(pfxPath, password, X509KeyStorageFlags.MachineKeySet | X509KeyStorageFlags.Exportable);
-        return pfxCertificate.LoadPublicKeyFromCert(password);
+        return pfxCertificate.GetPublicKeyFromCert(password);
     }
 
-    public static AsymmetricKeyParameter LoadPublicKeyFromCert(this byte[] pfx, string? password)
+    /// <summary>
+    /// Retrieves the public key from a certificate provided as a byte array in PFX format.
+    /// </summary>
+    /// <param name="pfx">The byte array containing the PFX certificate data.</param>
+    /// <param name="password">The optional password to access the certificate's private key. Can be null if the certificate is not password-protected.</param>
+    /// <returns>An AsymmetricKeyParameter object representing the public key extracted from the certificate.</returns>
+    public static AsymmetricKeyParameter GetPublicKeyFromCert(this byte[] pfx, string? password)
     {
         var pfxCertificate = new X509Certificate2(pfx, password, X509KeyStorageFlags.MachineKeySet | X509KeyStorageFlags.Exportable);
-        return pfxCertificate.LoadPublicKeyFromCert(password);
+        return pfxCertificate.GetPublicKeyFromCert(password);
     }
 
-    public static AsymmetricKeyParameter LoadPublicKeyFromCert(this X509Certificate2 certificate, string? password)
+    /// <summary>
+    /// Retrieves the public key from an X509Certificate2 object.
+    /// </summary>
+    /// <param name="certificate">The X509Certificate2 object containing the public key to be extracted.</param>
+    /// <param name="password">The optional password to access the certificate's private key. Can be null if the certificate is not password-protected.</param>
+    /// <returns>An AsymmetricKeyParameter object representing the public key extracted from the certificate.</returns>
+    public static AsymmetricKeyParameter GetPublicKeyFromCert(this X509Certificate2 certificate, string? password)
     {
         var pkcs12Store = new Pkcs12StoreBuilder().Build();
         using (var pfxStream = new MemoryStream(certificate.Export(X509ContentType.Pkcs12)))
