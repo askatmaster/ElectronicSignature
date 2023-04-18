@@ -43,10 +43,6 @@ Tests.TestVerifySignedByPrivateKey();
 //This test function may be verifying that the public key and the private key are a match.
 Tests.TestVerifyMatchBetweenPublicAndPrivateKeys();
 
-
-
-
-
 //This test function may be verifying that a certificate has been signed by a private certificate.
 //ATTENTION!!! When this method is called, the result will be "flase" if any of the certificates under test are not in the trust store;
 Tests.TestVerifySignedByPrivateCert();
