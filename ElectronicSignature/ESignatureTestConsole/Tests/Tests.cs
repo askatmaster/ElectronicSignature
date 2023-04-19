@@ -98,7 +98,7 @@ public static class Tests
         var message = "Hello world";
         var signature = Cryptography.SignDataByPrivateKey(message, privateKeyPath.GetPrivateKeyFromPem());
 
-        if(Cryptography.VerifySignedByPublicKey(message, signature, publicKeyPath.GetPublickKeyFromPem()))
+        if(Cryptography.VerifySignedByPublicKey(message, signature, publicKeyPath.GetPublicKeyFromPem()))
             Console.WriteLine("True");
         else
             Console.WriteLine("False");
@@ -227,8 +227,32 @@ public static class Tests
     /// </summary>
     public static void TestVerifyMatchBetweenPublicAndPrivateKeys()
     {
-        var dasd = Cryptography.VerifyMatchBetweenPublicAndPrivateKeys(signedCertPath.GetPublicCert(), privateCertPath.GetPrivateCert(privateCertPass));
+        var isValid = Cryptography.VerifyMatchBetweenPublicAndPrivateKeys(signedCertPath.GetPublicCert(), privateCertPath.GetPrivateCert(privateCertPass));
 
-        Console.WriteLine(dasd);
+        Console.WriteLine(isValid);
+    }
+
+    /// <summary>
+    /// Tests the GetCompressedECDSAPublicKeyFromBase64 method by providing a Base64-encoded compressed ECDSA public key
+    /// and checking if the retrieved key is not private.
+    /// </summary>
+    public static void TestGetCompressedECDSAPublicKeyFromBase64()
+    {
+        var key = "A2srIPKCMgOVyXq/fhK5Wnr3A/w9cfDv7dEepWZAKglw".GetCompressedECDSAPublicKeyFromBase64();
+
+        Console.WriteLine(!key.IsPrivate);
+    }
+
+    /// <summary>
+    /// Tests the GetCompressedECDSAPublicKeyFromPem method by providing a PEM-formatted compressed ECDSA public key
+    /// and checking if the imported key is not private.
+    /// </summary>
+    public static void TestImportCompressedECDSAPublicKeyFromPem()
+    {
+        var compressedKeyAsPem = @"-----BEGIN EC PUBLIC KEY-----A2srIPKCMgOVyXq/fhK5Wnr3A/w9cfDv7dEepWZAKglw-----END EC PUBLIC KEY-----";
+
+        var key = compressedKeyAsPem.GetCompressedECDSAPublicKeyFromPem();
+
+        Console.WriteLine(!key.IsPrivate);
     }
 }

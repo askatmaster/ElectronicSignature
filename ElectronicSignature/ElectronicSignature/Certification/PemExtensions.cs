@@ -1,4 +1,5 @@
-﻿using Org.BouncyCastle.Crypto;
+﻿using Org.BouncyCastle.Asn1.X9;
+using Org.BouncyCastle.Crypto;
 using Org.BouncyCastle.Crypto.Parameters;
 using Org.BouncyCastle.OpenSsl;
 using Org.BouncyCastle.Pkcs;
@@ -105,7 +106,7 @@ public static class PemExtensions
     /// <returns>The AsymmetricKeyParameter object representing the public key read from the PEM file.</returns>
     /// <exception cref="Exception">Thrown when the provided file contains a private key instead of a public key.</exception>
     /// <exception cref="InvalidOperationException">Thrown when the provided file does not contain a public key.</exception>
-    public static AsymmetricKeyParameter GetPublickKeyFromPem(this string publicKeyPath)
+    public static AsymmetricKeyParameter GetPublicKeyFromPem(this string publicKeyPath)
     {
         using (var reader = new StreamReader(publicKeyPath))
         {
@@ -115,12 +116,63 @@ public static class PemExtensions
             if (obj is RsaKeyParameters keyPair)
             {
                 if(keyPair.IsPrivate)
-                    throw new Exception("The provided file contain a private key.");
+                    throw new Exception("The provided file contain a private key instead of a public key.");
 
                 return keyPair;
             }
 
             throw new InvalidOperationException("The provided file does not contain a public key.");
         }
+    }
+
+    /// <summary>
+    /// Imports a compressed ECDSA public key from a PEM-formatted string using a specified curve.
+    /// </summary>
+    /// <param name="pem">A string containing the PEM-formatted compressed ECDSA public key.</param>
+    /// <param name="curveName">The ECNamedCurve to be used for the imported key. Default is secp256k1.</param>
+    /// <returns>An ECPublicKeyParameters instance representing the imported ECDSA public key.</returns>
+    /// <exception cref="ArgumentException">Thrown when the provided PEM object type is not 'EC PUBLIC KEY'.</exception>
+    /// <remarks>
+    /// This method reads the PEM-formatted string and expects an 'EC PUBLIC KEY' object.
+    /// It retrieves the specified named curve parameters and decodes the point from the PEM object's content.
+    /// Finally, it creates and returns an ECPublicKeyParameters instance using the decoded point and the domain parameters.
+    /// </remarks>
+    public static ECPublicKeyParameters GetCompressedECDSAPublicKeyFromPem(this string pem, ECNamedCurve curveName = ECNamedCurve.secp256k1)
+    {
+        using (TextReader textReader = new StringReader(pem))
+        {
+            var pemReader = new PemReader(textReader);
+            var pemObject = pemReader.ReadPemObject();
+
+            if (pemObject.Type != "EC PUBLIC KEY")
+                throw new ArgumentException("Invalid PEM object type. Expected 'EC PUBLIC KEY'.");
+
+            var curve = ECNamedCurveTable.GetByName(curveName.ToString());
+            var domainParameters = new ECDomainParameters(curve.Curve, curve.G, curve.N, curve.H, curve.GetSeed());
+            var q = curve.Curve.DecodePoint(pemObject.Content);
+            return new ECPublicKeyParameters(q, domainParameters);
+        }
+    }
+
+    /// <summary>
+    /// Retrieves an ECDSA public key from a compressed Base64-encoded string using a specified curve.
+    /// </summary>
+    /// <param name="base64">A string containing the compressed Base64-encoded ECDSA public key.</param>
+    /// <param name="curveName">The ECNamedCurve to be used for the retrieved key. Default is secp256k1.</param>
+    /// <returns>An ECPublicKeyParameters instance representing the decoded ECDSA public key.</returns>
+    /// <remarks>
+    /// This method first converts the Base64-encoded string into a byte array.
+    /// Then, it retrieves the specified named curve parameters and decodes the point from the byte array.
+    /// Finally, it creates and returns an ECPublicKeyParameters instance using the decoded point and the domain parameters.
+    /// </remarks>
+    public static ECPublicKeyParameters GetCompressedECDSAPublicKeyFromBase64(this string base64, ECNamedCurve curveName = ECNamedCurve.secp256k1)
+    {
+        var publicKeyBytes = Convert.FromBase64String(base64);
+
+        var curve = ECNamedCurveTable.GetByName(curveName.ToString());
+        var domainParameters = new ECDomainParameters(curve.Curve, curve.G, curve.N, curve.H, curve.GetSeed());
+        var decodePoint = curve.Curve.DecodePoint(publicKeyBytes);
+
+        return new ECPublicKeyParameters(decodePoint, domainParameters);
     }
 }
