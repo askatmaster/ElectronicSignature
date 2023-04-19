@@ -768,7 +768,7 @@ public static class Cryptography
                 Console.WriteLine("The message was signed by a different certificate.");
             }
         }
-        catch (CryptographicException e)
+        catch (CryptographicException)
         {
             isValid = false;
         }

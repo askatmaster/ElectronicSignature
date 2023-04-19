@@ -1,14 +1,35 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net7.0</TargetFramework>
+        <TargetFramework>netstandard2.1</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
+        <LangVersion>11</LangVersion>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <Title>A project for working with an electronic signature.</Title>
+        <Authors>Askhat Pazylidinov</Authors>
+        <Description>Implements an add-on to the BouncyCastle library to work with RSA and ECDSA key pairs, as well as certificates.</Description>
+        <Copyright>OpenSource</Copyright>
+        <PackageProjectUrl>https://github.com/askatmaster/ElectronicSignature</PackageProjectUrl>
+        <PackageLicenseFile>LICENSE</PackageLicenseFile>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+        <PackageIcon>ava.jpg</PackageIcon>
+        <RepositoryUrl>https://github.com/askatmaster/ElectronicSignature</RepositoryUrl>
+        <RepositoryType>git</RepositoryType>
+        <PackageTags>BouncyCastle, RSA, ECDSA, Cryptography, ElectronicSignature</PackageTags>
+        <PackageReleaseNotes> This version provides functionality for working with key pairs of RSA and ECDSA algorithms.</PackageReleaseNotes>
+        <Version>1.0.1</Version>
     </PropertyGroup>
 
     <ItemGroup>
       <PackageReference Include="BouncyCastle.Cryptography" Version="2.2.0" />
       <PackageReference Include="System.Security.Cryptography.Pkcs" Version="7.0.1" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Include="ava.jpg" Pack="true" PackagePath="\" />
+        <None Include="../../README.md" Pack="true" PackagePath="\" />
+        <None Include="../../LICENSE" Pack="true" PackagePath="\" />
     </ItemGroup>
 
 </Project>
