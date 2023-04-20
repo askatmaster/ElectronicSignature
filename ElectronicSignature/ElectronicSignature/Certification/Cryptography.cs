@@ -861,7 +861,7 @@ public static class Cryptography
     /// converts the plaintext string to a byte array, and then passes it to the ProcessBlock method of the Pkcs1Encoding object.
     /// The resulting byte array is then Base64-encoded and returned as a string.
     /// </remarks>
-    public static string EncryptDataWithPulicKey(string plaintext, AsymmetricKeyParameter publicKey)
+    public static string EncryptDataWithPublicKey(string plaintext, AsymmetricKeyParameter publicKey)
     {
         var encryptEngine = new Pkcs1Encoding(new RsaEngine());
         encryptEngine.Init(true, publicKey);

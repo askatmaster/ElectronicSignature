@@ -153,7 +153,7 @@ public static class Tests
     {
         var message = "Hello world";
         var keyPair = keyPairPath.GetKeyPairFromPem();
-        var encoded = Cryptography.EncryptDataWithPulicKey(message, keyPair.Public);
+        var encoded = Cryptography.EncryptDataWithPublicKey(message, keyPair.Public);
         var data = Cryptography.DecryptDataWithPrivateKey(encoded, keyPair.Private);
 
         Console.WriteLine(data);
