@@ -18,7 +18,7 @@
         <RepositoryType>git</RepositoryType>
         <PackageTags>BouncyCastle, RSA, ECDSA, Cryptography, ElectronicSignature</PackageTags>
         <PackageReleaseNotes> This version provides functionality for working with key pairs of RSA and ECDSA algorithms.</PackageReleaseNotes>
-        <Version>1.0.1</Version>
+        <Version>1.0.2</Version>
     </PropertyGroup>
 
     <ItemGroup>
