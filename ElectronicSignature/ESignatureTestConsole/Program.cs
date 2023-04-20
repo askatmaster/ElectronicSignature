@@ -44,14 +44,14 @@ Tests.TestVerifySignedByPrivateKey();
 Tests.TestVerifyMatchBetweenPublicAndPrivateKeys();
 
 //This test function may be verifying that a certificate has been signed by a private certificate.
-//ATTENTION!!! When this method is called, the result will be "flase" if any of the certificates under test are not in the trust store;
+//ATTENTION!!! When this method is called, the result will be "false" if any of the certificates under test are not in the trust store;
 Tests.TestVerifySignedByPrivateCert();
 
 //This test function may be verifying that signed data can be trusted using a root certificate.
-//ATTENTION!!! When this method is called, the result will be "flase" if any of the certificates under test are not in the trust store;
+//ATTENTION!!! When this method is called, the result will be "false" if any of the certificates under test are not in the trust store;
 Tests.TestVerifySignedDataRootCertAndTrustCommunication();
 
 //This test function may be verifying that signed data can be trusted using the same certificate.
-//ATTENTION!!! When this method is called, the result will be "flase" if any of the certificates under test are not in the trust store;
+//ATTENTION!!! When this method is called, the result will be "false" if any of the certificates under test are not in the trust store;
 Tests.TestVerifySignedDataBySameCert();
 
